@@ -26,6 +26,22 @@ void loop() {
 	delay(500);
 }
 
+void setupLCD() {
+	lcd.begin(16, 2);
+}
+
+void setupSensors() {
+	pinMode(SENSOR_SELECT[0], OUTPUT);
+	pinMode(SENSOR_SELECT[1], OUTPUT);
+}
+
+void setupMotors() {
+	pinMode(LEFT_SPEED, OUTPUT);
+	pinMode(LEFT_DIR, OUTPUT);
+	pinMode(RIGHT_SPEED, OUTPUT);
+	pinMode(RIGHT_DIR, OUTPUT);
+}
+
 void testConnection() {
 	digitalWrite(13, HIGH);
 	Serial.println(1);
@@ -42,22 +58,6 @@ void testConnection() {
 	delay(250);
 	digitalWrite(13, LOW);
 	delay(2000);
-}
-
-void setupLCD() {
-	lcd.begin(16, 2);
-}
-
-void setupSensors() {
-	pinMode(SENSOR_SELECT[0], OUTPUT);
-	pinMode(SENSOR_SELECT[1], OUTPUT);
-}
-
-void setupMotors() {
-	pinMode(LEFT_SPEED, OUTPUT);
-	pinMode(LEFT_DIR, OUTPUT);
-	pinMode(RIGHT_SPEED, OUTPUT);
-	pinMode(RIGHT_DIR, OUTPUT);
 }
 
 void testLCD() {
