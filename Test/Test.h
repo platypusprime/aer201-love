@@ -23,6 +23,7 @@ void setupMotors();
 void testLCD();
 void testSensors();
 void testMotors();
+void testSerial();
 int readSensor(int, int);
 #ifdef __cplusplus
 } // extern "C"

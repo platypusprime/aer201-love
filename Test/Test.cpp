@@ -3,16 +3,19 @@
 LiquidCrystal lcd(2, 3, 4, 5, 6, 7);
 
 const short SENSOR_SELECT[] = { 8, 9 };
-const short SENSOR_OUTPUT = A5;
+const short SENSOR_OUTPUT = A4;
 
 const short LEFT_SPEED = 10;
 const short LEFT_DIR = 13;
 const short RIGHT_SPEED = 11;
 const short RIGHT_DIR = 12;
 
+bool serialTested = false;
+
 void setup() {
 	Serial.begin(9600);
 	pinMode(13, OUTPUT); // initialize digital pin 13 as an output.
+	pinMode(SENSOR_OUTPUT, INPUT);
 	setupLCD();
 	setupSensors();
 	setupMotors();
@@ -20,10 +23,16 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-//	testLCD();
+
+//	testConnection();
+	//	testLCD();
 	testSensors();
 	testMotors();
-	delay(500);
+//	delay(500);
+
+	//if (!serialTested) {
+		//testSerial();
+	//}
 }
 
 void setupLCD() {
@@ -67,14 +76,25 @@ void testLCD() {
 }
 
 void testSensors() {
-	lcd.clear();
+	lcd.home();
+	lcd.print("OR:");
 	lcd.print(readSensor(0, 0));
+	lcd.print(" ");
+
 	lcd.setCursor(8, 0);
+	lcd.print("?L:");
 	lcd.print(readSensor(0, 1));
+	lcd.print("  ");
+
 	lcd.setCursor(0, 1);
+	lcd.print("CR:");
 	lcd.print(readSensor(1, 0));
+	lcd.print("  ");
+
 	lcd.setCursor(8, 1);
+	lcd.print("?L:");
 	lcd.print(readSensor(1, 1));
+	lcd.print("  ");
 }
 
 int readSensor(int i, int j) {
@@ -86,7 +106,8 @@ int readSensor(int i, int j) {
 		digitalWrite(SENSOR_SELECT[1], LOW);
 	else
 		digitalWrite(SENSOR_SELECT[1], HIGH);
-	//	delay(100);
+
+	delay(300);
 	return analogRead(SENSOR_OUTPUT);
 }
 
@@ -96,4 +117,21 @@ void testMotors() {
 	digitalWrite(RIGHT_DIR, HIGH);
 	analogWrite(RIGHT_SPEED, 100);
 
+}
+
+void testSerial() {
+	Serial.println("board_drop-2-WHITE");
+	delay(500);
+	Serial.println("board_drop-2-BLACK");
+	delay(500);
+	Serial.println("board_drop-3-WHITE");
+	delay(500);
+	Serial.println("board_drop-6-WHITE");
+	delay(500);
+	Serial.println("board_drop-0-BLACK");
+	delay(500);
+	Serial.println("board_drop-1-WHITE");
+	delay(500);
+	Serial.println("board_drop-5-BLACK");
+	serialTested = true;
 }
