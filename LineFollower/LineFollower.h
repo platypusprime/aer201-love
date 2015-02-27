@@ -7,8 +7,8 @@
 #ifndef LineFollower_H_
 #define LineFollower_H_
 #include "Arduino.h"
+#include <LiquidCrystal.h>
 //add your includes for the project LineFollower here
-
 
 //end of add your includes here
 #ifdef __cplusplus
@@ -16,16 +16,14 @@ extern "C" {
 #endif
 void loop();
 void setup();
+bool* readSensors();
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
-void calibrate();
+void calibrateSensors();
 int readSensor(int sensor);
 void adjustMotors();
-
-
-
 
 //Do not add code below this line
 #endif /* LineFollower_H_ */

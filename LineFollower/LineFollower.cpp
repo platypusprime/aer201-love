@@ -1,7 +1,10 @@
 #include "LineFollower.h"
+#include "Sensor.h"
 
-const short SENSOR_SELECT[] = { 8, 9 };
-const short SENSOR_OUTPUT = A5;
+//const short SENSOR_SELECT[] = { 8, 9 };
+//const short SENSOR_OUTPUT = A4;
+
+const unsigned long CALIB_TIME = 3000;
 
 const short LEFT_SPEED = 10;
 const short LEFT_DIR = 13;
@@ -11,15 +14,20 @@ const short RIGHT_DIR = 12;
 bool calibrated = false;
 int threshold = 0;
 
+// sensor pins hard-coded here
+Sensor lineSensors[4] = { A1, A2, A3, A4 };
+
 int leftSpd = 100, rightSpd = 100;
 const int ADJUSTMENT = 50;
 
+LiquidCrystal lcd(2, 3, 4, 5, 6, 7);
+
 void setup() {
 	//setup sensors
-	pinMode(SENSOR_SELECT[0], OUTPUT);
-	pinMode(SENSOR_SELECT[1], OUTPUT);
+	Serial.begin(9600);
+	lcd.begin(16, 2);
 
-	// setup motors
+// setup motors
 	pinMode(LEFT_SPEED, OUTPUT);
 	pinMode(LEFT_DIR, OUTPUT);
 	pinMode(RIGHT_SPEED, OUTPUT);
@@ -28,70 +36,92 @@ void setup() {
 
 void loop() {
 	if (!calibrated)
-		calibrate();
+		calibrateSensors();
 
-	int ml = readSensor(0);
-	int mr = readSensor(1);
+	bool *sensorOutput = readSensors();
 
-	if (ml > threshold && mr > threshold) {
-		// go straight
-	} else if (ml > threshold) {
-		leftSpd += ADJUSTMENT;
-	} else if (mr > threshold) {
-		rightSpd += ADJUSTMENT;
+	if (sensorOutput[1] && sensorOutput[2]) {
+		leftSpd = 255;
+		rightSpd = 255;
+	} else if (sensorOutput[1]) {
+//		leftSpd += ADJUSTMENT;
+		leftSpd = 0;
+		rightSpd = 255;
+	} else if (sensorOutput[2]) {
+//		rightSpd += ADJUSTMENT;
+		leftSpd = 255;
+		rightSpd = 0;
 	} else {
 		//cry in circles
 	}
 
+	delete[] sensorOutput;
+
+	delay(200);
+
 	adjustMotors();
 }
 
-int readSensor(int i, int j) {
-	if (i)
-		digitalWrite(SENSOR_SELECT[0], LOW);
-	else
-		digitalWrite(SENSOR_SELECT[0], HIGH);
-
-	if (j)
-		digitalWrite(SENSOR_SELECT[1], LOW);
-	else
-		digitalWrite(SENSOR_SELECT[1], HIGH);
-
-	return analogRead(SENSOR_OUTPUT);
-}
-
-int readSensor(int sensor) {
-	switch (sensor) {
-	case 0:
-		return readSensor(0, 0);
-	case 1:
-		return readSensor(0, 1);
-	case 2:
-		return readSensor(1, 0);
-	case 3:
-		return readSensor(1, 1);
-	default:
-		return -1;
-	}
-}
-
-void calibrate() {
-//	int darkVals[10];
-//	int lightVals[10];
-	int total = 0;
-	for (int i = 0; i < 10; i++) {
+void calibrateSensors() {
+	// move the sensors on and off the black lines while this is running
+	lcd.clear();
+	lcd.print("CALIBRATING");
+	long start = millis();
+	while (millis() - start < CALIB_TIME) {
+		lcd.setCursor(0, 1);
+		lcd.print(CALIB_TIME - millis() + start);
+		lcd.print("    ");
 		for (int j = 0; j < 4; j++) {
-			total += readSensor(j);
+			lineSensors[j].addCalibrationValue();
 		}
-		//		darkVals[i] = readSensor(0);
-//		lightVals[i] = readSensor(2);
-//		i++;
-//		darkVals[i] = readSensor(1);
-//		lightVals[i] = readSensor(3);
 	}
-
-	threshold = total / 40; // TODO replace with shift
+	lcd.clear();
 	calibrated = true;
+}
+
+bool* readSensors() {
+	bool* output = new bool[4];
+	for (int i = 0; i < 4; i++)
+		output[i] = lineSensors[i].onLine();
+
+	// print results on LCD
+	lcd.setCursor(1, 0);
+	if (output[0])
+		lcd.print("B");
+	else
+		lcd.print("W");
+	lcd.setCursor(0, 1);
+	lcd.print(lineSensors[0].read());
+	lcd.print("    ");
+
+	lcd.setCursor(5, 0);
+	if (output[1])
+		lcd.print("B");
+	else
+		lcd.print("W");
+	lcd.setCursor(4, 1);
+	lcd.print(lineSensors[1].read());
+	lcd.print("    ");
+
+	lcd.setCursor(9, 0);
+	if (output[2])
+		lcd.print("B");
+	else
+		lcd.print("W");
+	lcd.setCursor(8, 1);
+	lcd.print(lineSensors[2].read());
+	lcd.print("    ");
+
+	lcd.setCursor(13, 0);
+	if (output[3])
+		lcd.print("B");
+	else
+		lcd.print("W");
+	lcd.setCursor(12, 1);
+	lcd.print(lineSensors[3].read());
+	lcd.print("    ");
+
+	return output;
 }
 
 void adjustMotors() {
