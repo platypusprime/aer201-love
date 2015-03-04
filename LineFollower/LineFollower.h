@@ -16,13 +16,15 @@ extern "C" {
 #endif
 void loop();
 void setup();
-bool* readSensors();
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
 void calibrateSensors();
-int readSensor(int sensor);
+void readSensors(bool* &);
+void printSensorReadings(bool*);
+
+void startMotors();
 void adjustMotors();
 
 //Do not add code below this line
